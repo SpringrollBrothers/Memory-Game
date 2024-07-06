@@ -1,17 +1,26 @@
-const img = document.createElement("img");
-const cardButton = document.querySelector(".card");
 const backImg = "img/back.jpeg";
 const frontImg = "img/front.jpg";
-img.src = backImg;
-cardButton.appendChild(img);
+let showFront = false;
 
-let isFlipped = false;
+function createCardButton() {
+  const cardButton = document.createElement("button");
+  cardButton.className = "card";
 
-cardButton.addEventListener("click", () => {
-  if (isFlipped) {
-    img.src = frontImg;
-  } else {
-    img.src = backImg;
-  }
-  isFlipped = !isFlipped;
-});
+  const img = document.createElement("img");
+  img.src = backImg;
+  cardButton.appendChild(img);
+
+  cardButton.addEventListener("click", () => {
+    if (showFront) {
+      img.src = backImg;
+    } else {
+      img.src = frontImg;
+    }
+
+    showFront = !showFront;
+  });
+
+  return cardButton;
+}
+const gameBoard = document.querySelector(".game-board");
+gameBoard.appendChild(createCardButton());
