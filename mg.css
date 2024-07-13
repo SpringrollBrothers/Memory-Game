@@ -3,7 +3,7 @@
   height: 150px;
   padding: 0;
   border: 5px solid #ac9b9b;
-  margin: 100px;
+  margin: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -18,4 +18,11 @@
 }
 body {
   background-color: hwb(82 47% 31%);
+}
+
+.game-board {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 20px;
 }
