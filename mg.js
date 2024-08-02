@@ -8,6 +8,11 @@ const frontImg = [
   "img/front5.jpeg",
 ];
 const doubledFrontImgs = [...frontImg, ...frontImg];
+let flipCount = 0;
+let startTime = null;
+let timerInterval = null;
+let flippedCards = [];
+const flipBackDelay = 2000;
 
 function shuffleArray(array) {
   for (let i = array.length - 1; i > 0; i--) {
@@ -27,12 +32,31 @@ function createCardButton(frontImg) {
   let showFront = false;
 
   cardButton.addEventListener("click", () => {
+    if (!startTime) {
+      startTime = Date.now();
+      timerInterval = setInterval(() => {
+        const elapsedTime = parseInt((Date.now() - startTime) / 1000);
+        console.log("Elapsed time: " + elapsedTime + " seconds");
+      }, 1000);
+    }
     if (showFront) {
-      img.src = backImg;
+      img.scr = backImg;
     } else {
       img.src = frontImg;
-    }
+      flipCount++;
+      console.log("Total flips: " + flipCount);
+      flippedCards.push(cardButton);
 
+      if (flippedCards.length === 2) {
+        setTimeout(() => {
+          flippedCards.forEach((card) => {
+            const img = card.querySelector("img");
+            img.src = backImg;
+          });
+          flippedCards = [];
+        }, flipBackDelay);
+      }
+    }
     showFront = !showFront;
   });
 
@@ -40,6 +64,9 @@ function createCardButton(frontImg) {
 }
 const shuffledFrontImgs = shuffleArray(doubledFrontImgs);
 const gameBoard = document.querySelector(".game-board");
+const cardContainer = document.createElement("div");
+cardContainer.className = "card-container";
+gameBoard.appendChild(cardContainer);
 shuffledFrontImgs.forEach((frontImg) => {
-  gameBoard.appendChild(createCardButton(frontImg));
+  cardContainer.appendChild(createCardButton(frontImg));
 });
