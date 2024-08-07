@@ -1,9 +1,9 @@
 .card {
-  width: 150px;
-  height: 150px;
+  width: 100px;
+  height: 100px;
   padding: 0;
   border: 5px solid #ac9b9b;
-  margin: 10px;
+  margin: 3px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -21,8 +21,20 @@ body {
 }
 
 .game-board {
-  display: flex;
-  flex-wrap: wrap;
+  display:flex;
   justify-content: center;
-  gap: 20px;
+  height: 100%;
+  width:100%;
+}
+
+.card-container {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr); 
+  grid-template-rows: repeat(3, 1fr); 
+  gap:3px;  
+  width: 90vw;
+  max-width: 800px;;
+  height: 80vh;
+  max-height: 600px;
+  
 }
