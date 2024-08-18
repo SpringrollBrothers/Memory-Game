@@ -62,11 +62,30 @@ function createCardButton(frontImg) {
 
   return cardButton;
 }
-const shuffledFrontImgs = shuffleArray(doubledFrontImgs);
-const gameBoard = document.querySelector(".game-board");
-const cardContainer = document.createElement("div");
-cardContainer.className = "card-container";
-gameBoard.appendChild(cardContainer);
-shuffledFrontImgs.forEach((frontImg) => {
-  cardContainer.appendChild(createCardButton(frontImg));
+
+document.addEventListener("DOMContentLoaded", async function () {
+  let frontImg = [];
+  try {
+    const response = await fetch(
+      "https://raw.githubusercontent.com/SpringrollBrothers/SpringrollBrothers.github.io/main/memory.json"
+    );
+
+    if (!response.ok) {
+      throw new Error("Could not get your data");
+    }
+    const data = await response.json();
+    frontImg = data;
+
+    const doubledFrontImgs = [...frontImg, ...frontImg];
+    const shuffledFrontImgs = shuffleArray(doubledFrontImgs);
+    const gameBoard = document.querySelector(".game-board");
+    const cardContainer = document.createElement("div");
+    cardContainer.className = "card-container";
+    gameBoard.appendChild(cardContainer);
+    shuffledFrontImgs.forEach((frontImg) => {
+      cardContainer.appendChild(createCardButton(frontImg));
+    });
+  } catch (error) {
+    console.error(error);
+  }
 });
