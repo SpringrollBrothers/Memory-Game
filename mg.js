@@ -1,19 +1,3 @@
-const backImg = "img/back.jpeg";
-const frontImg = [
-  "img/front.jpg",
-  "img/front1.jpeg",
-  "img/front2.jpeg",
-  "img/front3.jpeg",
-  "img/front4.avif",
-  "img/front5.jpeg",
-];
-const doubledFrontImgs = [...frontImg, ...frontImg];
-let flipCount = 0;
-let startTime = null;
-let timerInterval = null;
-let flippedCards = [];
-const flipBackDelay = 2000;
-
 function shuffleArray(array) {
   for (let i = array.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -22,49 +6,65 @@ function shuffleArray(array) {
   return array;
 }
 
+const backImg = "img/back.jpeg";
+let flippedCards = [];
+const flipBackDelay = 300;
+let isChecking = false;
+
 function createCardButton(frontImg) {
   const cardButton = document.createElement("button");
   cardButton.className = "card";
-
   const img = document.createElement("img");
   img.src = backImg;
   cardButton.appendChild(img);
-  let showFront = false;
 
   cardButton.addEventListener("click", () => {
-    if (!startTime) {
-      startTime = Date.now();
-      timerInterval = setInterval(() => {
-        const elapsedTime = parseInt((Date.now() - startTime) / 1000);
-        console.log("Elapsed time: " + elapsedTime + " seconds");
-      }, 1000);
-    }
-    if (showFront) {
-      img.scr = backImg;
-    } else {
-      img.src = frontImg;
-      flipCount++;
-      console.log("Total flips: " + flipCount);
-      flippedCards.push(cardButton);
+    if (isChecking || img.src === frontImg) return;
 
-      if (flippedCards.length === 2) {
+    img.src = frontImg;
+    flippedCards.push({
+      button: cardButton,
+      img: img,
+    });
+
+    if (flippedCards.length === 2) {
+      isChecking = true;
+
+      const [firstCard, secondCard] = flippedCards;
+      const firstCardImgSrc = firstCard.img.src;
+      const secondCardImgSrc = secondCard.img.src;
+      if (firstCardImgSrc === secondCardImgSrc) {
         setTimeout(() => {
-          flippedCards.forEach((card) => {
-            const img = card.querySelector("img");
+          firstCard.button.style.visibility = "hidden";
+          secondCard.button.style.visibility = "hidden";
+          flippedCards = [];
+          isChecking = false;
+
+          const allCards = document.querySelectorAll(".card");
+          const hiddenCards = Array.from(allCards).filter(
+            (card) => card.style.visibility === "hidden"
+          );
+
+          if (hiddenCards.length === allCards.length) {
+            reloadNewGame();
+          }
+        }, 300);
+      } else {
+        setTimeout(() => {
+          flippedCards.forEach(({ img }) => {
             img.src = backImg;
           });
           flippedCards = [];
+          isChecking = false;
         }, flipBackDelay);
       }
     }
-    showFront = !showFront;
   });
 
   return cardButton;
 }
 
-document.addEventListener("DOMContentLoaded", async function () {
-  let frontImg = [];
+async function getData() {
   try {
     const response = await fetch(
       "https://raw.githubusercontent.com/SpringrollBrothers/SpringrollBrothers.github.io/main/memory.json"
@@ -73,19 +73,41 @@ document.addEventListener("DOMContentLoaded", async function () {
     if (!response.ok) {
       throw new Error("Could not get your data");
     }
-    const data = await response.json();
-    frontImg = data;
 
-    const doubledFrontImgs = [...frontImg, ...frontImg];
-    const shuffledFrontImgs = shuffleArray(doubledFrontImgs);
-    const gameBoard = document.querySelector(".game-board");
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+}
+
+async function loadCards() {
+  const frontImg = await getData();
+
+  if (frontImg === null) {
+    return;
+  }
+
+  const doubledFrontImgs = [...frontImg, ...frontImg];
+  const shuffledFrontImgs = shuffleArray(doubledFrontImgs);
+  const gameBoard = document.querySelector(".game-board");
+  if (gameBoard) {
+    gameBoard.innerHTML = "";
     const cardContainer = document.createElement("div");
     cardContainer.className = "card-container";
     gameBoard.appendChild(cardContainer);
+
     shuffledFrontImgs.forEach((frontImg) => {
       cardContainer.appendChild(createCardButton(frontImg));
     });
-  } catch (error) {
-    console.error(error);
   }
+}
+
+function reloadNewGame() {
+  loadCards();
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+  loadCards();
 });
