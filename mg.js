@@ -1,3 +1,13 @@
+const backImg = "img/back.jpeg";
+let flippedCards = [];
+const flipBackDelay = 200;
+let isChecking = false;
+
+let flipCount = 0;
+let timerStarted = false;
+let startTime = null;
+let timerInterval = null;
+
 function shuffleArray(array) {
   for (let i = array.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -6,10 +16,22 @@ function shuffleArray(array) {
   return array;
 }
 
-const backImg = "img/back.jpeg";
-let flippedCards = [];
-const flipBackDelay = 300;
-let isChecking = false;
+function startTimer() {
+  startTime = Date.now();
+  timerInterval = setInterval(() => {
+    const elapsedTime = Math.floor((Date.now() - startTime) / 1000);
+    document.getElementById("timer").textContent = `Time: ${elapsedTime}s`;
+  }, 1000);
+}
+
+function stopTimer() {
+  clearInterval(timerInterval);
+}
+
+function updateFlipCounter() {
+  flipCount++;
+  document.getElementById("flip-counter").textContent = `Flips: ${flipCount}`;
+}
 
 function createCardButton(frontImg) {
   const cardButton = document.createElement("button");
@@ -19,9 +41,16 @@ function createCardButton(frontImg) {
   cardButton.appendChild(img);
 
   cardButton.addEventListener("click", () => {
+    if (!timerStarted) {
+      timerStarted = true;
+      startTimer();
+    }
+
     if (isChecking || img.src === frontImg) return;
 
     img.src = frontImg;
+    updateFlipCounter();
+
     flippedCards.push({
       button: cardButton,
       img: img,
@@ -46,7 +75,8 @@ function createCardButton(frontImg) {
           );
 
           if (hiddenCards.length === allCards.length) {
-            reloadNewGame();
+            stopTimer();
+            showResults();
           }
         }, 300);
       } else {
@@ -62,24 +92,6 @@ function createCardButton(frontImg) {
   });
 
   return cardButton;
-}
-
-async function getData() {
-  try {
-    const response = await fetch(
-      "https://raw.githubusercontent.com/SpringrollBrothers/SpringrollBrothers.github.io/main/memory.json"
-    );
-
-    if (!response.ok) {
-      throw new Error("Could not get your data");
-    }
-
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error(error);
-    return null;
-  }
 }
 
 async function loadCards() {
@@ -104,10 +116,46 @@ async function loadCards() {
   }
 }
 
-function reloadNewGame() {
+function showResults() {
+  const elapsedTime = Math.floor((Date.now() - startTime) / 1000);
+  const resultText = `You completed the game in ${elapsedTime}s with ${flipCount} flips.`;
+  document.getElementById("result-text").textContent = resultText;
+  document.getElementById("result-modal").style.display = "block";
+}
+
+function resetGame() {
+  flipCount = 0;
+  timerStarted = false;
+  stopTimer();
+  document.getElementById("timer").textContent = "Time: 0s";
+  document.getElementById("flip-counter").textContent = "Flips: 0";
   loadCards();
 }
 
 document.addEventListener("DOMContentLoaded", function () {
-  loadCards();
+  resetGame();
+
+  document
+    .getElementById("restart-button")
+    .addEventListener("click", function () {
+      document.getElementById("result-modal").style.display = "none";
+      resetGame();
+    });
 });
+async function getData() {
+  try {
+    const response = await fetch(
+      "https://raw.githubusercontent.com/SpringrollBrothers/SpringrollBrothers.github.io/main/memory.json"
+    );
+
+    if (!response.ok) {
+      throw new Error("Could not get your data");
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+}
