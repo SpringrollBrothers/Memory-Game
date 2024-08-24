@@ -142,6 +142,7 @@ document.addEventListener("DOMContentLoaded", function () {
       resetGame();
     });
 });
+
 async function getData() {
   try {
     const response = await fetch(
