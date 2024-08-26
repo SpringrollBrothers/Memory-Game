@@ -33,6 +33,40 @@ function updateFlipCounter() {
   document.getElementById("flip-counter").textContent = `Flips: ${flipCount}`;
 }
 
+function onImageClick(img, frontImg, cardButton) {
+  StartTheTimer();
+  const foundCard = flippedCardCheck(img);
+  if (foundCard) return;
+  showFrontCard(img, frontImg, cardButton);
+  //check if the card has been clicked
+  // if so, unflip it
+}
+
+function StartTheTimer() {
+  if (!timerStarted) {
+    timerStarted = true;
+    startTimer();
+  }
+}
+function flippedCardCheck(img) {
+  if (flippedCards.some((item) => item.img === img)) {
+    img.src = backImg;
+    flippedCards = [];
+    return true;
+  } else {
+    return false;
+  }
+}
+function showFrontCard(img, frontImg, cardButton) {
+  img.src = frontImg;
+  updateFlipCounter();
+
+  flippedCards.push({
+    button: cardButton,
+    img: img,
+  });
+}
+
 function createCardButton(frontImg) {
   const cardButton = document.createElement("button");
   cardButton.className = "card";
@@ -41,20 +75,7 @@ function createCardButton(frontImg) {
   cardButton.appendChild(img);
 
   cardButton.addEventListener("click", () => {
-    if (!timerStarted) {
-      timerStarted = true;
-      startTimer();
-    }
-
-    if (isChecking || img.src === frontImg) return;
-
-    img.src = frontImg;
-    updateFlipCounter();
-
-    flippedCards.push({
-      button: cardButton,
-      img: img,
-    });
+    onImageClick(img, frontImg, cardButton);
 
     if (flippedCards.length === 2) {
       isChecking = true;
@@ -142,7 +163,6 @@ document.addEventListener("DOMContentLoaded", function () {
       resetGame();
     });
 });
-
 async function getData() {
   try {
     const response = await fetch(
