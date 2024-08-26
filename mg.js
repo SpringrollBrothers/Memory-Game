@@ -38,8 +38,6 @@ function onImageClick(img, frontImg, cardButton) {
   const foundCard = flippedCardCheck(img);
   if (foundCard) return;
   showFrontCard(img, frontImg, cardButton);
-  //check if the card has been clicked
-  // if so, unflip it
 }
 
 function StartTheTimer() {
