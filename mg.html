@@ -7,7 +7,19 @@
     <link rel="stylesheet" href="mg.css" />
   </head>
   <body>
-    <div class="game-board"></div>
+    <div class="game-container">
+      <div class="head">
+        <span id="timer">Time: 0s</span>
+        <span id="flip-counter">Flips: 0</span>
+      </div>
+      <div class="game-board"></div>
+      <div id="result-modal" class="modal">
+        <div class="modal-content">
+          <p id="result-text"></p>
+          <button id="restart-button">Start New Game</button>
+        </div>
+      </div>
+    </div>
     <script src="mg.js"></script>
   </body>
 </html>

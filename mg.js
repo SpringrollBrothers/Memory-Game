@@ -1,3 +1,13 @@
+const backImg = "img/back.jpeg";
+let flippedCards = [];
+const flipBackDelay = 200;
+let isChecking = false;
+
+let flipCount = 0;
+let timerStarted = false;
+let startTime = null;
+let timerInterval = null;
+
 function shuffleArray(array) {
   for (let i = array.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -5,12 +15,55 @@ function shuffleArray(array) {
   }
   return array;
 }
-const backImg = "img/back.jpeg";
-let flipCount = 0;
-let startTime = null;
-let timerInterval = null;
-let flippedCards = [];
-const flipBackDelay = 2000;
+
+function startTimer() {
+  startTime = Date.now();
+  timerInterval = setInterval(() => {
+    const elapsedTime = Math.floor((Date.now() - startTime) / 1000);
+    document.getElementById("timer").textContent = `Time: ${elapsedTime}s`;
+  }, 1000);
+}
+
+function stopTimer() {
+  clearInterval(timerInterval);
+}
+
+function updateFlipCounter() {
+  flipCount++;
+  document.getElementById("flip-counter").textContent = `Flips: ${flipCount}`;
+}
+
+function onImageClick(img, frontImg, cardButton) {
+  StartTheTimer();
+  const foundCard = flippedCardCheck(img);
+  if (foundCard) return;
+  showFrontCard(img, frontImg, cardButton);
+}
+
+function StartTheTimer() {
+  if (!timerStarted) {
+    timerStarted = true;
+    startTimer();
+  }
+}
+function flippedCardCheck(img) {
+  if (flippedCards.some((item) => item.img === img)) {
+    img.src = backImg;
+    flippedCards = [];
+    return true;
+  } else {
+    return false;
+  }
+}
+function showFrontCard(img, frontImg, cardButton) {
+  img.src = frontImg;
+  updateFlipCounter();
+
+  flippedCards.push({
+    button: cardButton,
+    img: img,
+  });
+}
 
 function createCardButton(frontImg) {
   const cardButton = document.createElement("button");
@@ -18,61 +71,110 @@ function createCardButton(frontImg) {
   const img = document.createElement("img");
   img.src = backImg;
   cardButton.appendChild(img);
-  let showFront = false;
+
   cardButton.addEventListener("click", () => {
-    if (!startTime) {
-      startTime = Date.now();
-      timerInterval = setInterval(() => {
-        const elapsedTime = parseInt((Date.now() - startTime) / 1000);
-        console.log("Elapsed time: " + elapsedTime + " seconds");
-      }, 1000);
-    }
-    if (showFront) {
-      img.src = backImg;
-    } else {
-      img.src = frontImg;
-      flipCount++;
-      console.log("Total flips: " + flipCount);
-      flippedCards.push(cardButton);
-      if (flippedCards.length === 2) {
+    onImageClick(img, frontImg, cardButton);
+
+    if (flippedCards.length === 2) {
+      isChecking = true;
+
+      const [firstCard, secondCard] = flippedCards;
+      const firstCardImgSrc = firstCard.img.src;
+      const secondCardImgSrc = secondCard.img.src;
+      if (firstCardImgSrc === secondCardImgSrc) {
         setTimeout(() => {
-          flippedCards.forEach((card) => {
-            const img = card.querySelector("img");
+          firstCard.button.style.visibility = "hidden";
+          secondCard.button.style.visibility = "hidden";
+          flippedCards = [];
+          isChecking = false;
+
+          const allCards = document.querySelectorAll(".card");
+          const hiddenCards = Array.from(allCards).filter(
+            (card) => card.style.visibility === "hidden"
+          );
+
+          if (hiddenCards.length === allCards.length) {
+            stopTimer();
+            showResults();
+          }
+        }, 300);
+      } else {
+        setTimeout(() => {
+          flippedCards.forEach(({ img }) => {
             img.src = backImg;
           });
           flippedCards = [];
+          isChecking = false;
         }, flipBackDelay);
       }
     }
-    showFront = !showFront;
   });
 
   return cardButton;
 }
 
-document.addEventListener("DOMContentLoaded", function () {
-  let frontImg = [];
-  fetch(
-    "https://raw.githubusercontent.com/SpringrollBrothers/SpringrollBrothers.github.io/main/memory.json"
-  )
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error("Could not get your data");
-      }
-      return response.json();
-    })
-    .then((data) => {
-      frontImg = data;
+async function loadCards() {
+  const frontImg = await getData();
 
-      const doubledFrontImgs = [...frontImg, ...frontImg];
-      const shuffledFrontImgs = shuffleArray(doubledFrontImgs);
-      const gameBoard = document.querySelector(".game-board");
-      const cardContainer = document.createElement("div");
-      cardContainer.className = "card-container";
-      gameBoard.appendChild(cardContainer);
-      shuffledFrontImgs.forEach((frontImg) => {
-        cardContainer.appendChild(createCardButton(frontImg));
-      });
-    })
-    .catch((error) => console.error(error));
+  if (frontImg === null) {
+    return;
+  }
+
+  const doubledFrontImgs = [...frontImg, ...frontImg];
+  const shuffledFrontImgs = shuffleArray(doubledFrontImgs);
+  const gameBoard = document.querySelector(".game-board");
+  if (gameBoard) {
+    gameBoard.innerHTML = "";
+    const cardContainer = document.createElement("div");
+    cardContainer.className = "card-container";
+    gameBoard.appendChild(cardContainer);
+
+    shuffledFrontImgs.forEach((frontImg) => {
+      cardContainer.appendChild(createCardButton(frontImg));
+    });
+  }
+}
+
+function showResults() {
+  const elapsedTime = Math.floor((Date.now() - startTime) / 1000);
+  const resultText = `You completed the game in ${elapsedTime}s with ${flipCount} flips.`;
+  document.getElementById("result-text").textContent = resultText;
+  document.getElementById("result-modal").style.display = "block";
+}
+
+function resetGame() {
+  flipCount = 0;
+  timerStarted = false;
+  stopTimer();
+  document.getElementById("timer").textContent = "Time: 0s";
+  document.getElementById("flip-counter").textContent = "Flips: 0";
+  loadCards();
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+  resetGame();
+
+  document
+    .getElementById("restart-button")
+    .addEventListener("click", function () {
+      document.getElementById("result-modal").style.display = "none";
+      resetGame();
+    });
 });
+async function getData() {
+  try {
+    const response = await fetch(
+      "https://raw.githubusercontent.com/SpringrollBrothers/SpringrollBrothers.github.io/main/memory.json"
+    );
+
+    if (!response.ok) {
+      throw new Error("Could not get your data");
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+}
