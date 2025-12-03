@@ -6,7 +6,7 @@ An interactive memory game built with **HTML**, **CSS**, and **JavaScript**. Mat
 
 ---
 
-## Features 🚀  
+## Features 
 
 - **Dynamic Gameplay**: Randomly shuffled cards ensure a unique experience every time.  
 - **Timer Functionality**: Keep track of how long it takes you to complete the game.  
@@ -15,7 +15,7 @@ An interactive memory game built with **HTML**, **CSS**, and **JavaScript**. Mat
 
 ---
 
-## How It Works 🧩  
+## How It Works   
 
 1. **Start the Game**: Click on any card to flip it and reveal its front image.  
 2. **Match Pairs**: Flip two cards to check if they match. If not, they will flip back.  
@@ -24,7 +24,7 @@ An interactive memory game built with **HTML**, **CSS**, and **JavaScript**. Mat
 
 ---
 
-## Technology Stack 🛠️  
+## Technology Stack   
 
 - **HTML**: Structure and layout of the game.  
 - **CSS**: Styling for the cards and overall design.  
@@ -32,7 +32,7 @@ An interactive memory game built with **HTML**, **CSS**, and **JavaScript**. Mat
 
 ---
 
-## Code Highlights 📋  
+## Code Highlights   
 
 ### Shuffle Algorithm  
 Ensures the cards are shuffled randomly for each new game.  
